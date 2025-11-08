@@ -2,14 +2,12 @@ package main
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/gocolly/colly"
 )
 
-func main() {
-	args := os.Args
-	url := args[1]
+func CollectPracujPL() []string{
+	url := "https://it.pracuj.pl/praca"
 	collector := colly.NewCollector()
 
 	var collected_urls []string
@@ -34,5 +32,6 @@ func main() {
 	})
 
 	collector.Visit(url)
+ return collected_urls
 
 }
