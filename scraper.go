@@ -32,6 +32,6 @@ func CollectPracujPL() []string{
 	})
 
 	collector.Visit(url)
- return collected_urls
+  return collected_urls
 
 }
