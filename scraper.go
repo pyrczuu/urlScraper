@@ -1,4 +1,4 @@
-package main
+package urlscraper
 
 import (
 	"fmt"
