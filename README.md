@@ -1,5 +1,5 @@
 # urlSCraper
-## Zbiera linki do ofert z listy na [pracuj.pl](https://it.pracuj.pl/praca)
+## Zbiera linki do ofert pracy
 - Stworzone na podstawie [poradnika](https://dev.to/claudbytes/build-a-web-scraper-with-go-3jod)
-- Przyjmuje link jako argument w terminalu (chyba bez sensu skoro jest stworzone pod tą konkretną stronę)
-- Wyświetla zebrane URL i zwraca ich slice (powinno)
+- Działa dla [pracuj.pl](https://it.pracuj.pl/praca), [nofluffjobs](https://nofluffjobs.com/pl) oraz [justjoinit](https://justjoin.it/)
+- Zwraca zebrane linki w []string
