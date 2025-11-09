@@ -6,8 +6,7 @@ import (
 	"github.com/gocolly/colly"
 )
 
-func CollectPracujPL() []string{
-	url := "https://it.pracuj.pl/praca"
+func collectURLs(url string, class string) []string {
 	collector := colly.NewCollector()
 
 	var collected_urls []string
@@ -21,17 +20,33 @@ func CollectPracujPL() []string{
 	collector.OnError(func(r *colly.Response, e error) {
 		fmt.Println("Error:", e)
 	})
-	collector.OnHTML("a.tiles_cnb3rfy.core_n194fgoq", func(e *colly.HTMLElement) {
+	collector.OnHTML(class, func(e *colly.HTMLElement) {
 		collected_urls = append(collected_urls, e.Attr("href"))
 
 	})
-	collector.OnScraped(func(r *colly.Response) {
-		for _, url := range collected_urls {
-			fmt.Println(url)
-		}
-	})
 
 	collector.Visit(url)
-  return collected_urls
+	return collected_urls
+}
 
+func CollectNoFluffJobs() []string {
+	urls := collectURLs("https://nofluffjobs.com/pl/artificial-intelligence?criteria=category%3Dsys-administrator,business-analyst,architecture,backend,data,ux,devops,erp,embedded,frontend,fullstack,game-dev,mobile,project-manager,security,support,testing,other", "a.posting-list-item")
+	var formatted []string
+	for _, url := range urls {
+		formatted = append(formatted, "https://nofluffjobs.com"+url)
+	}
+	return formatted
+}
+
+func CollectJustJoinIT() []string {
+	urls := collectURLs("https://justjoin.it/", "a.offer-card")
+	var formatted []string
+	for _, url := range urls {
+		formatted = append(formatted, "https://justjoin.it"+url)
+	}
+	return formatted
+}
+
+func CollectPracujPL() []string {
+	return collectURLs("https://it.pracuj.pl/praca", "a.tiles_cnb3rfy.core_n194fgoq")
 }
