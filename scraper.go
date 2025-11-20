@@ -1,7 +1,7 @@
-package urlscraper
+package urlsgocraper
 
 import (
-	"fmt"
+	"log"
 	"time"
 
 	"github.com/gocolly/colly"
@@ -21,13 +21,13 @@ func collectURLs(url string, class string) []string {
 	var collected_urls []string
 
 	collector.OnRequest(func(r *colly.Request) {
-		fmt.Println("Visiting", r.URL)
+		log.Println("Visiting", r.URL)
 	})
 	collector.OnResponse(func(r *colly.Response) {
-		fmt.Println("Got a response from", r.Request.URL)
+		log.Println("Got a response from", r.Request.URL)
 	})
 	collector.OnError(func(r *colly.Response, e error) {
-		fmt.Println("Error:", e)
+		log.Fatal("Error:", e)
 	})
 	collector.OnHTML(class, func(e *colly.HTMLElement) {
 		collected_urls = append(collected_urls, e.Attr("href"))
