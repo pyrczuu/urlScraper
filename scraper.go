@@ -2,12 +2,21 @@ package urlscraper
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/gocolly/colly"
 )
 
 func collectURLs(url string, class string) []string {
 	collector := colly.NewCollector()
+
+	collector.Limit(&colly.LimitRule{
+		DomainGlob:  "*",
+		Parallelism: 2,
+		RandomDelay: 3 * time.Second,
+	})
+
+	colly.UserAgent("Mozilla/5.0 (Windows NT; Win64; x64; rv109.0) Gecko/20100101 Firefox/121.0")
 
 	var collected_urls []string
 
@@ -48,5 +57,5 @@ func CollectJustJoinIT() []string {
 }
 
 func CollectPracujPL() []string {
-	return collectURLs("https://it.pracuj.pl/praca", "a.tiles_cnb3rfy.core_n194fgoq")
+	return collectURLs("https://it.pracuj.pl/praca", "[data-test=\"link-offer\"]")
 }
