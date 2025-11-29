@@ -1,41 +1,52 @@
 package urlsgocraper
 
 import (
+	"context"
+	"github.com/PuerkitoBio/goquery"
+	//"github.com/chromedp/cdproto/emulation"
+	"github.com/chromedp/chromedp"
 	"log"
+	"math/rand"
+	"strings"
 	"time"
-
-	"github.com/gocolly/colly"
 )
 
-func collectURLs(url string, class string) []string {
-	collector := colly.NewCollector()
+func collectURLs(url string, selector string) []string {
+	ctx, cancel := chromedp.NewContext(context.Background())
+	defer cancel()
 
-	collector.Limit(&colly.LimitRule{
-		DomainGlob:  "*",
-		Parallelism: 2,
-		RandomDelay: 3 * time.Second,
+	// Timeout
+	ctx, cancel = context.WithTimeout(ctx, time.Duration(rand.Intn(800)+300)*time.Millisecond)
+	defer cancel()
+
+	var html string
+
+	// Pobierz pełny HTML
+	err := chromedp.Run(ctx,
+		chromedp.Navigate(url),
+		chromedp.WaitReady("body", chromedp.ByQuery),
+		chromedp.OuterHTML("html", &html, chromedp.ByQuery),
+	)
+	if err != nil {
+		log.Fatal("Chromedp error:", err)
+	}
+
+	// Parsowanie HTML goquery
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	if err != nil {
+		log.Fatal("Goquery error:", err)
+	}
+
+	var collected []string
+
+	doc.Find(selector).Each(func(_ int, s *goquery.Selection) {
+		href, exists := s.Attr("href")
+		if exists {
+			collected = append(collected, href)
+		}
 	})
 
-	colly.UserAgent("Mozilla/5.0 (Windows NT; Win64; x64; rv109.0) Gecko/20100101 Firefox/121.0")
-
-	var collected_urls []string
-
-	collector.OnRequest(func(r *colly.Request) {
-		log.Println("Visiting", r.URL)
-	})
-	collector.OnResponse(func(r *colly.Response) {
-		log.Println("Got a response from", r.Request.URL)
-	})
-	collector.OnError(func(r *colly.Response, e error) {
-		log.Fatal("Error:", e)
-	})
-	collector.OnHTML(class, func(e *colly.HTMLElement) {
-		collected_urls = append(collected_urls, e.Attr("href"))
-
-	})
-
-	collector.Visit(url)
-	return collected_urls
+	return collected
 }
 
 func CollectNoFluffJobs() []string {
