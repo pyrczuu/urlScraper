@@ -2,13 +2,17 @@ package urlsgocraper
 
 import (
 	"context"
+
 	"github.com/PuerkitoBio/goquery"
-	//"github.com/chromedp/cdproto/emulation"
-	"github.com/chromedp/chromedp"
+	"github.com/chromedp/cdproto/emulation"
+
 	"log"
 	"math/rand"
 	"strings"
 	"time"
+
+	//"github.com/chromedp/cdproto/emulation"
+	"github.com/chromedp/chromedp"
 )
 
 func collectURLs(url string, selector string) []string {
@@ -21,12 +25,32 @@ func collectURLs(url string, selector string) []string {
 
 	var html string
 
-	// Pobierz pełny HTML
-	err := chromedp.Run(ctx,
-		chromedp.Navigate(url),
-		chromedp.WaitReady("body", chromedp.ByQuery),
-		chromedp.OuterHTML("html", &html, chromedp.ByQuery),
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.Flag("headless", false),
+		chromedp.Flag("disable-gpu", false),
+		chromedp.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "+
+			"AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"),
+		chromedp.Flag("disable-web-security", true),
+		chromedp.Flag("disable-site-isolation-trials", true),
 	)
+	allocCtx, cancelAlloc := chromedp.NewExecAllocator(ctx, opts...)
+	defer cancelAlloc()
+
+	chromeDpCtx, cancelCtx := chromedp.NewContext(allocCtx)
+	defer cancelCtx()
+
+	// Pobierz pełny HTML
+	err := chromedp.Run(
+		chromeDpCtx,
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			return emulation.SetDeviceMetricsOverride(1280, 900, 1.0, false).Do(ctx)
+		}),
+		chromedp.Navigate(url),
+		chromedp.Sleep(time.Duration(rand.Intn(800)+300)*time.Millisecond),
+		chromedp.WaitVisible("body", chromedp.ByQuery),
+		chromedp.OuterHTML("html", &html),
+	)
+
 	if err != nil {
 		log.Fatal("Chromedp error:", err)
 	}
